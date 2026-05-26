@@ -1,4 +1,4 @@
-const API_ENDPOINT = "YOUR_API_GATEWAY_URL_HERE";
+const API_ENDPOINT = "https://dfrwj47zqf.execute-api.ap-south-1.amazonaws.com/prod/count";
 
 async function updateVisitorCount() {
   const el = document.getElementById("visitor-count");
