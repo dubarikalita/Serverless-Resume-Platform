@@ -1,5 +1,4 @@
-const API_ENDPOINT = "https://dfrwj47zqf.execute-api.ap-south-1.amazonaws.com/prod/count";
-
+const API_ENDPOINT = "https://9plnr9k4c0.execute-api.ap-south-1.amazonaws.com/prod/count";
 async function updateVisitorCount() {
   const el = document.getElementById("visitor-count");
 
