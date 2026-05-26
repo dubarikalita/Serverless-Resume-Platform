@@ -2,7 +2,7 @@
 
 A cloud-hosted personal resume and portfolio website built with AWS and automated DevOps practices. This is the frontend repository containing the static site — HTML, CSS, and JavaScript — deployed to AWS S3 and served globally via CloudFront.
 
-> **Live site:** [https://your-cloudfront-url.cloudfront.net](https://d1ka3yqfxmsg18.cloudfront.net)
+> **Live site:** [https://d1ka3yqfxmsg18.cloudfront.net](https://d1ka3yqfxmsg18.cloudfront.net)
 
 ---
 
