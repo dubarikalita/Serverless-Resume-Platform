@@ -1,0 +1,55 @@
+# ══════════════════════════════════════════════════════
+# Frontend CI/CD Pipeline
+#
+# Triggers on every push to main branch.
+# Steps:
+#   1. Checkout code
+#   2. Configure AWS credentials from GitHub Secrets
+#   3. Sync all files to S3
+#   4. Invalidate CloudFront cache so visitors
+#      immediately see the updated site
+# ══════════════════════════════════════════════════════
+
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Sync to S3 and invalidate CloudFront
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Step 1 — Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2 — Inject AWS credentials from GitHub Secrets
+      # into the environment so the AWS CLI can authenticate
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ secrets.AWS_REGION }}
+
+      # Step 3 — Sync the entire repo to S3
+      # --delete removes any files from S3 that no longer exist locally
+      - name: Deploy to S3
+        run: |
+          aws s3 sync . s3://${{ secrets.S3_BUCKET }}/ \
+            --delete \
+            --exclude ".git/*" \
+            --exclude ".github/*"
+
+      # Step 4 — Tell CloudFront to fetch fresh files from S3
+      # Without this, visitors may see the old cached version for up to 24h
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
