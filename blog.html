@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Building a Serverless Resume on AWS — Dubari Kalita</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#e8e0d5;--card:#f0ebe3;--card-alt:#1a1a1a;--border:#c8bfb0;
+      --text:#1a1a1a;--text-muted:#4a4540;--text-light:#7a7268;
+      --pink:#f472b6;--pink-dark:#db2777;--pink-bg:#fce7f3;--white:#faf8f5;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Archivo',sans-serif;font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased;padding:2rem 1rem 4rem}
+    a{color:var(--pink-dark);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .page{max-width:860px;margin:0 auto}
+    nav{background:var(--card-alt);border-radius:12px;padding:.85rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between}
+    .nav-back{font-family:'Archivo Black',sans-serif;font-size:12px;letter-spacing:.08em;color:var(--pink);text-transform:uppercase}
+    .nav-back:hover{text-decoration:none;opacity:.8}
+    .nav-label{font-size:11px;color:#888;letter-spacing:.1em;text-transform:uppercase}
+    .hero-card{background:var(--white);border:2px solid var(--text);border-radius:16px;padding:2.5rem 2.5rem 2rem;margin-bottom:1.5rem}
+    .hero-badge{display:inline-block;background:var(--pink);color:var(--white);font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .9rem;border-radius:999px;margin-bottom:1.25rem}
+    h1{font-family:'Archivo Black',sans-serif;font-size:clamp(2.2rem,6vw,3.5rem);line-height:1.05;letter-spacing:-.02em;color:var(--text);margin-bottom:1.25rem}
+    .hero-meta-row{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem}
+    .pill{display:inline-block;font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:.3rem .85rem;border-radius:999px;border:2px solid var(--text);background:transparent;color:var(--text)}
+    .pill.filled{background:var(--card-alt);color:var(--white);border-color:var(--card-alt)}
+    .pill.pink{background:var(--pink-bg);color:var(--pink-dark);border-color:var(--pink)}
+    .hero-desc{font-size:1.05rem;color:var(--text-muted);line-height:1.8;border-left:3px solid var(--pink);padding-left:1.25rem;font-style:italic}
+    .card{background:var(--white);border:2px solid var(--text);border-radius:16px;padding:2rem 2.5rem;margin-bottom:1.5rem}
+    .card-dark{background:var(--card-alt);border:2px solid var(--card-alt);border-radius:16px;padding:2rem 2.5rem;margin-bottom:1.5rem;color:var(--white)}
+    .card-dark p{color:#b0a898}
+    .card-dark h2{color:var(--white)}
+    .card-dark strong{color:var(--white)}
+    h2{font-family:'Archivo Black',sans-serif;font-size:1.4rem;letter-spacing:-.01em;margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem}
+    h2 .section-badge{background:var(--pink);color:white;font-size:10px;padding:.25rem .7rem;border-radius:999px;letter-spacing:.1em;text-transform:uppercase;font-family:'Archivo Black',sans-serif;flex-shrink:0}
+    h3{font-family:'Archivo Black',sans-serif;font-size:1rem;letter-spacing:.02em;margin:1.75rem 0 .6rem;color:var(--text)}
+    .card-dark h3{color:var(--pink)}
+    p{color:var(--text-muted);margin-bottom:1rem;font-size:.95rem}
+    p:last-child{margin-bottom:0}
+    strong{color:var(--text);font-weight:600}
+    .arch-block{background:#111;border:2px solid #333;border-radius:10px;padding:1.5rem;font-family:'Courier New',monospace;font-size:.78rem;color:#b0a898;line-height:1.9;overflow-x:auto;margin:1.25rem 0}
+    .arch-block .hl{color:var(--pink);font-weight:bold}
+    .arch-block .dim{color:#444}
+    .arch-block .ok{color:#4caf82}
+    .phases{display:flex;flex-direction:column;gap:8px;margin:1.25rem 0}
+    .phase{display:grid;grid-template-columns:40px 1fr;gap:.85rem;align-items:start;background:var(--card);border:2px solid var(--border);border-radius:10px;padding:1rem 1.25rem;transition:border-color .2s}
+    .phase:hover{border-color:var(--pink)}
+    .phase-num{font-family:'Archivo Black',sans-serif;font-size:13px;background:var(--card-alt);color:var(--pink);width:32px;height:32px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem}
+    .phase-title{font-family:'Archivo Black',sans-serif;font-size:.9rem;color:var(--text);margin-bottom:.2rem}
+    .phase-desc{font-size:.82rem;color:var(--text-light);line-height:1.6}
+    .learnings{list-style:none;margin:.75rem 0}
+    .learnings li{display:flex;gap:.85rem;align-items:flex-start;padding:.75rem 0;border-bottom:1px solid var(--border);font-size:.92rem;color:var(--text-muted);line-height:1.7}
+    .card-dark .learnings li{border-bottom-color:#333;color:#b0a898}
+    .learnings li:last-child{border-bottom:none}
+    .learnings li::before{content:'→';color:var(--pink);font-family:'Archivo Black',sans-serif;font-size:.8rem;margin-top:.2rem;flex-shrink:0}
+    .callout{background:var(--pink-bg);border:2px solid var(--pink);border-radius:10px;padding:1.25rem 1.5rem;margin:1.5rem 0}
+    .callout-label{font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.15em;color:var(--pink-dark);text-transform:uppercase;margin-bottom:.4rem}
+    .callout p{color:var(--text-muted);font-size:.88rem;margin:0}
+    .footer-card{background:var(--card-alt);border-radius:16px;padding:1.5rem 2.5rem;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:1rem}
+    .footer-card span{font-family:'Archivo Black',sans-serif;font-size:12px;color:#888;letter-spacing:.06em;text-transform:uppercase}
+    .footer-links{display:flex;gap:1rem}
+    .footer-links a{font-family:'Archivo Black',sans-serif;font-size:11px;color:var(--pink);letter-spacing:.08em;text-transform:uppercase}
+    .footer-links a:hover{text-decoration:none;opacity:.7}
+    @media(max-width:600px){body{padding:1rem .75rem 3rem}.hero-card,.card,.card-dark{padding:1.5rem}h1{font-size:2rem}}
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <nav>
+    <a href="index.html" class="nav-back">← Back to Resume</a>
+    <span class="nav-label">Project Writeup</span>
+  </nav>
+
+  <div class="hero-card">
+    <div class="hero-badge">Cloud &amp; DevOps · Project Writeup</div>
+    <h1>Building a Serverless Resume on AWS</h1>
+    <div class="hero-meta-row">
+      <span class="pill filled">Dubari Kalita</span>
+      <span class="pill pink">7 Phases</span>
+      <span class="pill pink">~20 Hours</span>
+      <span class="pill">Cloud Resume Challenge</span>
+    </div>
+    <p class="hero-desc">
+      Instead of putting my resume on GitHub Pages or a PDF link, I decided to build
+      and host it the way a cloud engineer actually would — using AWS, serverless
+      architecture, infrastructure as code, and a fully automated CI/CD pipeline.
+      Here's exactly what I built, how it works, and what I learned.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2><span class="section-badge">01</span> What Is This Project</h2>
+    <p>
+      The <strong>Serverless Resume Platform</strong> is a personal resume and portfolio
+      website that demonstrates practical cloud and DevOps skills by using those very
+      skills to build and deploy itself. The site is a static HTML/CSS/JS page hosted
+      on AWS, with a real serverless backend that tracks and displays a live visitor counter.
+    </p>
+    <p>
+      Every part of this project — from where the files are stored, to how they get
+      deployed — uses production-grade AWS services and practices. Nothing is click-ops.
+      Everything is automated or defined as code.
+    </p>
+    <div class="callout">
+      <div class="callout-label">The core idea</div>
+      <p>The resume itself is proof of the skills listed on it. A visitor can read "GitHub Actions CI/CD" on the page and know the page was deployed using exactly that.</p>
+    </div>
+  </div>
+
+  <div class="card-dark">
+    <h2><span class="section-badge">02</span> How It Works</h2>
+    <p>The project is split into two separate repositories — frontend and backend — each with its own automated deployment pipeline.</p>
+    <div class="arch-block">
+<span class="hl">FRONTEND</span>
+<span class="dim">─────────────────────────────────────────</span>
+Browser → <span class="hl">CloudFront</span> (HTTPS + CDN) → <span class="hl">S3</span> (private)
+            ↑
+  Custom domain via Route 53 + ACM SSL
+
+<span class="hl">BACKEND — visitor counter</span>
+<span class="dim">─────────────────────────────────────────</span>
+JS fetch(POST) → <span class="hl">API Gateway</span> → <span class="hl">Lambda</span> (Python)
+                                       ↓
+                                 <span class="hl">DynamoDB</span>
+                             { visitor_count + 1 }
+                                       ↓
+                             returns <span class="ok">{ "count": N }</span>
+
+<span class="hl">CI/CD</span>
+<span class="dim">─────────────────────────────────────────</span>
+git push → <span class="hl">GitHub Actions</span>
+  ├── Frontend: s3 sync + CloudFront invalidation
+  └── Backend:  pytest gate → sam build → sam deploy
+    </div>
+    <p>
+      The visitor counter is the interesting part. When the page loads, a JavaScript
+      <strong>fetch()</strong> call hits the API Gateway endpoint. API Gateway triggers
+      a Python Lambda function, which runs an atomic <strong>ADD</strong> on a DynamoDB
+      item — incrementing the count with no race conditions — and returns the new value
+      as JSON. No database is ever exposed directly to the public.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2><span class="section-badge">03</span> The 7 Phases</h2>
+    <p>I broke the project into 7 sequential phases so there was always a working state at every step.</p>
+    <div class="phases">
+      <div class="phase"><div class="phase-num">1</div><div><div class="phase-title">Frontend — HTML / CSS / JS</div><div class="phase-desc">Built the resume page locally. Designed the theme, structure, and the visitor counter UI placeholder.</div></div></div>
+      <div class="phase"><div class="phase-num">2</div><div><div class="phase-title">AWS Setup + S3 Static Hosting</div><div class="phase-desc">Created S3 bucket, configured static website hosting, uploaded files, set bucket policy for public read.</div></div></div>
+      <div class="phase"><div class="phase-num">3</div><div><div class="phase-title">CloudFront + HTTPS</div><div class="phase-desc">Put CloudFront in front of S3. Added Origin Access Control, free ACM SSL certificate, CloudFront-only bucket policy.</div></div></div>
+      <div class="phase"><div class="phase-num">4</div><div><div class="phase-title">DynamoDB + Python Lambda</div><div class="phase-desc">Created DynamoDB table, wrote Python Lambda with atomic counter increment, wrote unit tests with mocked AWS calls.</div></div></div>
+      <div class="phase"><div class="phase-num">5</div><div><div class="phase-title">API Gateway</div><div class="phase-desc">Exposed Lambda as a public REST API. Configured CORS preflight (OPTIONS) so the browser allows cross-origin calls.</div></div></div>
+      <div class="phase"><div class="phase-num">6</div><div><div class="phase-title">Infrastructure as Code — AWS SAM</div><div class="phase-desc">Replaced all manual CLI commands with a single template.yaml. sam deploy now recreates the entire backend from scratch.</div></div></div>
+      <div class="phase"><div class="phase-num">7</div><div><div class="phase-title">GitHub Actions CI/CD</div><div class="phase-desc">Two automated pipelines. Frontend: push → S3 sync → CloudFront invalidation. Backend: push → pytest gate → SAM deploy.</div></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="section-badge">04</span> The Parts That Tripped Me Up</h2>
+    <h3>CORS — the silent killer</h3>
+    <p>CORS caused more debugging time than anything else. The browser sends an HTTP <strong>OPTIONS preflight request</strong> before the actual POST — asking "are you going to allow this?". If API Gateway doesn't handle OPTIONS and return the right headers, the browser silently blocks the real request. The fix was adding a MOCK integration for OPTIONS that returns the correct <strong>Access-Control-Allow-*</strong> headers.</p>
+    <h3>boto3 at module level breaks pytest</h3>
+    <p>My first version of <strong>counter.py</strong> initialised <strong>boto3.resource("dynamodb")</strong> at the top of the file. This meant when pytest imported the file, it immediately tried to connect to AWS and failed with <strong>NoRegionError</strong>. The fix was moving boto3 initialisation inside the handler function so it only runs on actual invocation, not on import.</p>
+    <h3>SAM vs manually created resources</h3>
+    <p>When I introduced SAM in Phase 6, it tried to create resources with the same names as ones I'd manually created earlier — failing with "resource already exists". The lesson: use IaC from the very beginning, or cleanly delete manually created resources before handing ownership to SAM.</p>
+    <div class="callout">
+      <div class="callout-label">Key insight</div>
+      <p>CloudFormation maintains state of every resource it manages. If you create something manually outside of it, CloudFormation doesn't know it exists and will conflict with it. Always let your IaC tool own everything it touches.</p>
+    </div>
+  </div>
+
+  <div class="card-dark">
+    <h2><span class="section-badge">05</span> What I Learned</h2>
+    <ul class="learnings">
+      <li><strong>IAM roles vs IAM users</strong> — Lambda doesn't use access keys. It assumes an IAM role at runtime. Understanding identity-based vs resource-based policies was a foundational shift in how I think about AWS permissions.</li>
+      <li><strong>IaC is not optional</strong> — Manually created resources are invisible to version control. You can't review, audit, or reproduce them. After going through the pain of recreating everything in SAM, I now treat IaC as a non-negotiable starting point.</li>
+      <li><strong>Test-gated CI/CD is genuinely useful</strong> — Having pytest block the SAM deploy when a test fails saved me from deploying broken code twice during this project. The pipeline becomes a safety net, not just automation.</li>
+      <li><strong>CloudFront caching catches you off guard</strong> — After every frontend change, the old cached version kept showing. Cache invalidation is a real operational concern. Automating it in GitHub Actions was the right call.</li>
+      <li><strong>Two repos, two pipelines is the right separation</strong> — Keeping frontend and backend separate means a CSS change doesn't trigger a SAM deploy, and a Lambda fix doesn't invalidate CloudFront unnecessarily. Separation of concerns applies to repositories too.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="section-badge">06</span> Repositories</h2>
+    <p>Both repos are public and fully documented with READMEs covering the architecture, setup, and how to deploy from scratch.</p>
+    <ul class="learnings">
+      <li><a href="https://github.com/dubarikalita/Serverless-Resume-Platform" target="_blank" rel="noopener noreferrer">Serverless-Resume-Platform</a> — Frontend: HTML/CSS/JS + GitHub Actions deploy workflow</li>
+      <li><a href="https://github.com/dubarikalita/Serverless-Resume-Platform-Backend" target="_blank" rel="noopener noreferrer">Serverless-Resume-Platform-Backend</a> — Backend: Python Lambda + AWS SAM + pytest + GitHub Actions</li>
+    </ul>
+  </div>
+
+  <div class="footer-card">
+    <span>Dubari Kalita · Cloud Resume Challenge</span>
+    <div class="footer-links">
+      <a href="index.html">← Resume</a>
+      <a href="https://github.com/dubarikalita" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
